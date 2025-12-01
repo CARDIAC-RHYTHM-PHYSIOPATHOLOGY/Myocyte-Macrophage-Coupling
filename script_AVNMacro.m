@@ -53,15 +53,15 @@ function mainAVNMacro(pst)
     i_stim_Period 			=60*1e3/i_stim_frequency; %ms
     minPerioddetect=0.1;
     minAmpdetect=5;
+    dateSimulation=char(datetime('today'));
     %Rate=zeros(1,2);
     %par_block=1;
     tic
     options = odeset('MaxStep',1, 'outputfcn', @odewbar);
 
-    %path=pwd();
-    %dir_result=[ path,'\ResultatsDXround_typeMPhi',num2str( Choix_Type_Phi),'StimMacro',num2str( stim_flagM),...
-    %   'StimMyo',num2str( stim_flag),'gapstep005nSsession',num2str(session),'capaM',num2str(Cm_Phi),'\'];
-    dir_result=[ 'F:\ResultatsSimulationMacrophages\Resultats04112025_typeMPhi',num2str( Choix_Type_Phi),...
+    path=pwd();
+ 
+    dir_result=[ path,'\Resultats',dateSimulation,'_typeMPhi',num2str( Choix_Type_Phi),...
         'GgapStep',num2str(gapstep),'StimMacro',num2str( stim_flagM),...
         'StimMyo',num2str( stim_flag),'perStim',num2str( bpm_stim),'AmpSt',num2str(i_stim_Amplitude),...
         'session',num2str(session),'capaM',num2str(Cm_Phi),'\'];

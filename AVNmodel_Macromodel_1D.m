@@ -23,6 +23,7 @@ i_stim_Start 			= param(10);   % msecond (in stim_mode)
 i_stim_Period 			=param(13); %ms
 
 
+
 dY=zeros(size(Y));
 nbrecell=param(23);
 i_diff_Phi=param(24);
@@ -33,7 +34,7 @@ Macro_Type=param(17);
 ActivShift=param(22);
 G_gapmacro=0;
  %% IGap
-dati=zeros(1,nbrecell*2);
+dati=zeros(1,nbrecell*3);
 
 %% Constants
 
@@ -116,7 +117,7 @@ end
 if  (time>=Temps_Application_Macro) && (param(18)~=0 && Inter_macro==0 )
 
  
-          
+
   if  (cell==param(18) || cell==param(19) || cell==param(20) || cell==param(21))
         G_gapmacro=G_gapm*1;
   else
@@ -1004,7 +1005,8 @@ end
   
 
 dati(cell)=I_Gap_AV;
-dati(cell+24)=I_Gap_AV1 ;
+dati(cell+nbrecell)=I_Gap_AV1 ;
+dati(cell+nbrecell*2)= i_f;
 %datai=[INa, INas, ICaL ,ICaD, ICaT, Ikr,Ik1,...
 %         Ito, Isus, If, IbNa, IbK, IbCa, Ip,...
 %         INaCa, Ist, IKs, h1, h2,m,...

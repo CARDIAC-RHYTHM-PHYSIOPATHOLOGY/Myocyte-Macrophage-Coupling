@@ -97,16 +97,17 @@ model = @AVNmodel_Macromodel_1D;
  % Y1=Y(1:42);
  % Y=repmat(Y1,1,Nbrecell);
 %  2700 2800
+
 facteur_echelle_couplage=3000;
-facteur_echelle_couplage_Macro=7;
+facteur_echelle_couplage_Macro=1;
 nsec =20; %s
 CL = 1000*nsec;
 G_gapm=facteur_echelle_couplage_Macro*1;%40;   % macrophage conductance nS
 G_gap=facteur_echelle_couplage*40;     % gap junction coupling nS
 Cm_Phi=18.32;%27.9;
 inter_macro=4;
-group_macro=[0,6,7,8];
-Macro_Type=12;
+group_macro=[0,21,23,24];
+Macro_Type=0;
 %***********************************************************
 bpm_stim =350; %      stimulation  frequency BPM
 flag_stim=1;   % flag for activated stimulation 
@@ -122,23 +123,13 @@ flag_stim=1;   % flag for activated stimulation
 %
 Nbre_episodes=1;
 Temps_Application_Macro=10000;
-dateSimulation='06112025';
+dateSimulation=char(datetime('today'));
+Simulation=[num2str(Nbrecell),num2str(NbreCellules_a_stimule),num2str(bpm_stim),...
+ num2str(Macro_Type),num2str(G_gap),num2str(G_gapm),num2str(inter_macro),num2str(CL)];
 ActivShift=0;
 i_diff_Phi=0;
-
-%*****************************************************************************
-
- chemin=['F:\ResultatsSimulationMacrophages\Simulation_1D_',dateSimulation,'\Resultat_Ncells_',num2str(Nbrecell),'_typeM_',num2str(Macro_Type),'_gap_',...
-   num2str(G_gap),'_Macro_',num2str(G_gapm),'_Inter_Macro_',num2str(inter_macro),'_ActivShift',num2str(ActivShift),'_GroupeMacro_',num2str(group_macro),...
-   '_Stim_',num2str(flag_stim),'_BPM_',num2str(bpm_stim),...
-   '_NbrecellulesStim_',num2str(NbreCellules_a_stimule),...
-    '_i_stim_PulseDuration_',num2str(i_stim_PulseDuration),...
-   ' _i_stim_Amplitude_',num2str( i_stim_Amplitude) ,'_time_',num2str(CL),'_sec\'];  % num2str(G_gapm)
-
-  test_dir=exist(chemin,'dir');
-    if test_dir==0
-        mkdir(chemin)
-    end
+title_text=['type',num2str(Macro_Type),'gapMacro',num2str(facteur_echelle_couplage_Macro),...
+    'nSbppm',num2str(bpm_stim)];
 
 %**************************************************************
 % Cell dimension
@@ -150,11 +141,24 @@ Lcell = (1/(2*pi*Rcell))*(Cm/(10^8*Cm_surf)-(2*pi*(Rcell)^2)); %dm % 65 um
 deltax=65; % deta distance um
 L=deltax*Nbrecell;
 %distance=0:dx;L;
+
+%*****************************************************************************
+dir1=pwd;
+
+ chemin=strcat(dir1, '\Simulation_1D_' ,dateSimulation,Simulation ,'\');  % num2str(G_gapm)
+
+  test_dir=exist(chemin,'dir');
+    if test_dir==0
+        mkdir(chemin)
+    end
+
+%*****************************************************************************************************
 %%
 for episode=1:Nbre_episodes % run by episode of CL  time length msec
    
     tic
-    Const=[bpm_stim,flag_stim,G_gap,G_gapm,Cm_Phi,CL,deltax,...
+    
+Const=[bpm_stim,flag_stim,G_gap,G_gapm,Cm_Phi,CL,deltax,...
         i_stim_End, i_stim_PulseDuration,i_stim_Start,i_stim_Amplitude,...
         i_stim_frequency,i_stim_Period, NbreCellules_a_stimule,inter_macro,...
         Temps_Application_Macro,Macro_Type,group_macro,ActivShift,Nbrecell,i_diff_Phi];
@@ -163,11 +167,12 @@ for episode=1:Nbre_episodes % run by episode of CL  time length msec
 %%
     IgapAV  =zeros(Nbrecell,size(Yout,1));
     IgapMyo_Macro=zeros(Nbrecell,size(Yout,1));
+    If=zeros(Nbrecell,size(Yout,1));
     for i= 1:size(Yout,1)
         [~, dati]    = model(t(i), Yout(i,:),Const);
         IgapAV(:,i)=dati(1:Nbrecell);
-        IgapMyo_Macro(:,i)=dati(25:Nbrecell*2);
-
+        IgapMyo_Macro(:,i)=dati(Nbrecell+1:Nbrecell*2);
+        If(:,i)=dati((Nbrecell*2)+1:Nbrecell*3);
     end
 %
 %****************************************************
@@ -188,67 +193,84 @@ Y=Yout(end,:);
 elapsedTime = toc;
 disp(elapsedTime/60)
 end
-%%
+%
 figure(episode)
 
 
 imagesc(t,(1:Nbrecell).*deltax,Vm')
 xlabel('time msec');ylabel('distance um')
 
+files_save=['Heatmap',title_text];
+
+saveas(gcf,[chemin,files_save],'jpeg')
+
+
 %******************************************
 figure(episode+Nbrecell)
 for cell=1:Nbrecell-18
 subplot(6,1,cell)
 plot(t,Vm(:,cell))
-yyaxis  right
-plot(t,IgapAV(cell,:))
-hold on
-plot(t,IgapMyo_Macro(cell,:),'g')
-%plot([t(1) t(end)],[0 0])
-yyaxis left
+% yyaxis  right
+% plot(t,IgapAV(cell,:))
+% hold on
+% plot(t,IgapMyo_Macro(cell,:),'g')
+% %plot([t(1) t(end)],[0 0])
+% yyaxis left
 ylabel(['Cell ',num2str(cell)])
 
 end
+files_save=['Cell1-6_',title_text];
+
+saveas(gcf,[chemin,files_save],'jpeg')
 %***********************************
 figure(episode+Nbrecell*2)
 for cell=7:Nbrecell-12
 subplot(6,1,cell-6)
 plot(t,Vm(:,cell))
-yyaxis  right
-plot(t,IgapAV(cell,:))
-hold on
-plot(t,IgapMyo_Macro(cell,:),'g')
-%plot([t(1) t(end)],[0 0])
-yyaxis left
+% yyaxis  right
+% plot(t,IgapAV(cell,:))
+% hold on
+% plot(t,IgapMyo_Macro(cell,:),'g')
+% %plot([t(1) t(end)],[0 0])
+% yyaxis left
 ylabel(['Cell ',num2str(cell)])
 
 end
+files_save=['Cell7-12_',title_text];
+
+saveas(gcf,[chemin,files_save],'jpeg')
 %**********************************
 figure(episode+Nbrecell*3)
 for cell=13:Nbrecell-6
 subplot(6,1,cell-12)
 plot(t,Vm(:,cell))
-yyaxis  right
-plot(t,IgapAV(cell,:))
-hold on
-plot(t,IgapMyo_Macro(cell,:),'g')
-%plot([t(1) t(end)],[0 0])
-yyaxis left
+% yyaxis  right
+% plot(t,IgapAV(cell,:))
+% hold on
+% plot(t,IgapMyo_Macro(cell,:),'g')
+% %plot([t(1) t(end)],[0 0])
+% yyaxis left
 ylabel(['Cell ',num2str(cell)])
 end
+files_save=['Cell13-18_',title_text];
+
+saveas(gcf,[chemin,files_save],'jpeg')
 %***************************************
 figure(episode+Nbrecell*4)
 for cell=19:Nbrecell
 subplot(6,1,cell-18)
 plot(t,Vm(:,cell))
-yyaxis  right
-plot(t,IgapAV(cell,:))
-hold on
-plot(t,IgapMyo_Macro(cell,:),'g')
-%plot([t(1) t(end)],[0 0])
-yyaxis left
+% yyaxis  right
+% plot(t,IgapAV(cell,:))
+% hold on
+% plot(t,IgapMyo_Macro(cell,:),'g')
+% %plot([t(1) t(end)],[0 0])
+% yyaxis left
 ylabel(['Cell ',num2str(cell)])
 end
+files_save=['Cell19-24_',title_text];
+
+saveas(gcf,[chemin,files_save],'jpeg')
 %****************************************
 figure(episode+Nbrecell*5)
 imagesc(t,(1:Nbrecell),IgapAV)
@@ -260,7 +282,8 @@ imagesc(t,(1:Nbrecell),IgapMyo_Macro)
 %
 %***********************************************************************
 
-%***************************************************************************     
+%*************************************************************************** 
+%%
 dx=0.0065028;
 %Nbrecell=Ncells;
 indextime=find(t<10000,1,"last");
@@ -290,15 +313,15 @@ clc
 dt=mean(diff(t));
 dvdt=Vm;
 for cell=1:Nbrecell
-    
+
 dvdt(:,cell)=[diff(Vm(:,cell));0];
 
- Tf=islocalmax(Vm(:,cell),'minProminence',45,'MinSeparation',100,'SamplePoints',t);
-Tmdp=islocalmin(Vm(:,cell),'minProminence',45,'MinSeparation',150,'SamplePoints',t);
+ %Tf=islocalmax(Vm(:,cell),'minProminence',45,'MinSeparation',100,'SamplePoints',t);
+%Tmdp=islocalmin(Vm(:,cell),'minProminence',45,'MinSeparation',150,'SamplePoints',t);
 %Tdvdt=islocalmax(dvdt(:,cell),'minProminence',0.5,'MinSeparation',150,'SamplePoints',t);
-Events{cell}=Tf;
-EventsMDP{cell}=Tmdp;
-   
+%Events{cell}=Tf;
+%EventsMDP{cell}=Tmdp;
+
 Tmax=Events{cell};
 Tmdp=EventsMDP{cell};
 
@@ -318,7 +341,7 @@ Amp=Vm(indexTmax(i),cell);
 
  TSeuil(s,1)=true;
  Inmdp=find(indexTmdp>indexTmax(i),1,'first');
- 
+
  Amp90=Amp -(Amp-Vm(indexTmdp(Inmdp),cell))*0.90;
 index90=indexTmax(i)+find(Vm(indexTmax(i):indexTmdp(Inmdp),cell)>Amp90,1,'last');
 T90(index90,1)=true;
@@ -361,39 +384,42 @@ plot(indextimeSeuil,paseuil,'+r','MarkerSize',10)
 plot(indextimeMDP,pamdp,'>c','MarkerSize',10)
 end
 hold off
+
 %****************************************************************
 
-for i=1:24
-    nc=i;
-
-    figure(nc)
-
-
-    Tpa=Events{nc};
-    Tmdp=EventsMDP{nc};
-    T90=T90repol{nc};
-    TSeuil=SeuilPa{nc};
-    %*******************************
-    indextimepa=find(Tpa);
-    indextimeMDP=find(Tmdp);
-    indextimeT90=find(T90);
-    indextimeSeuil=find(TSeuil);
-   
-    plot(t,Vm(:,nc))
-    hold on
-    plot(t(indextimepa),Vm(indextimepa,nc),'*r','MarkerSize',10)
-    plot(t(indextimeT90),Vm(indextimeT90,nc),'og','MarkerSize',10)
-    plot(t(indextimeSeuil),Vm(indextimeSeuil,nc),'+r','MarkerSize',10)
-    plot(t(indextimeMDP),Vm(indextimeMDP,nc),'>c','MarkerSize',10)
-    hold off
-   Ioff=find(t(indextimeSeuil)<10000);
-   Ion=find(t(indextimeSeuil)>=10000);
- APD90off{nc}=t(indextimeT90(Ioff))-t(indextimeSeuil(Ioff));
- APD90on{nc}=t(indextimeT90(Ion))-t(indextimeSeuil(Ion));
- 
-tableduree=[t(indextimeSeuil),t(indextimeT90),t(indextimeT90)-t(indextimeSeuil)];
-end
+% for i=1:Nbrecell
+%     nc=i;
+% 
+%     figure(nc)
+% 
+% 
+%     Tpa=Events{nc};
+%     Tmdp=EventsMDP{nc};
+%     T90=T90repol{nc};
+%     TSeuil=SeuilPa{nc};
+%     %*******************************
+%     indextimepa=find(Tpa);
+%     indextimeMDP=find(Tmdp);
+%     indextimeT90=find(T90);
+%     indextimeSeuil=find(TSeuil);
+% 
+%     plot(t,Vm(:,nc))
+%     hold on
+%     plot(t(indextimepa),Vm(indextimepa,nc),'*r','MarkerSize',10)
+%     plot(t(indextimeT90),Vm(indextimeT90,nc),'og','MarkerSize',10)
+%     plot(t(indextimeSeuil),Vm(indextimeSeuil,nc),'+r','MarkerSize',10)
+%     plot(t(indextimeMDP),Vm(indextimeMDP,nc),'>c','MarkerSize',10)
+%     hold off
+%    Ioff=find(t(indextimeSeuil)<10000);
+%    Ion=find(t(indextimeSeuil)>=10000);
+%  APD90off{nc}=t(indextimeT90(Ioff))-t(indextimeSeuil(Ioff));
+%  APD90on{nc}=t(indextimeT90(Ion))-t(indextimeSeuil(Ion));
+% 
+% tableduree=[t(indextimeSeuil),t(indextimeT90),t(indextimeT90)-t(indextimeSeuil)];
+% end
 %%
+% Pool APD90 OFF and ON 
+%
  Pool_APD90off=[];Pool_APD90on=[];
 for i=1:24
 
@@ -402,7 +428,7 @@ Pool_APD90off=[Pool_APD90off; tmp_APD];
 
 tmp_APD= APD90on{i} ;
 Pool_APD90on=[Pool_APD90on ;tmp_APD];
- 
+
 end
 
 
@@ -410,7 +436,40 @@ end
 
 
 %********************************************************************************
-Nc1=5;Nc2=10;
+Nc1=5;Nc2=10;Nb=abs(Nc2-Nc1);
+
+%**************************************************************
+figure(1)
+
+for Ncell=5:5:10
+    Tpa=Events{Ncell};
+    Tmdp=EventsMDP{Ncell};
+    T90=T90repol{Ncell};
+    TSeuil=SeuilPa{Ncell};
+    %*******************************
+    indextimepa=find(Tpa);
+    indextimeMDP=find(Tmdp);
+    indextimeT90=find(T90);
+    indextimeSeuil=find(TSeuil);
+   hold on
+   if Ncell==5
+    plot(t,Vm(:,Ncell),'LineStyle','--','LineWidth',3)
+   else
+        plot(t,Vm(:,Ncell),'LineStyle','-','LineWidth',3)
+   end
+
+
+    plot(t(indextimepa),Vm(indextimepa,Ncell),'*r','MarkerSize',10)
+    plot(t(indextimeT90),Vm(indextimeT90,Ncell),'og','MarkerSize',10)
+    plot(t(indextimeSeuil),Vm(indextimeSeuil,Ncell),'+r','MarkerSize',10)
+    plot(t(indextimeMDP),Vm(indextimeMDP,Ncell),'>c','MarkerSize',10)
+
+
+end
+hold off
+
+
+%***************************************************************************
 Tf=Events{Nc1};
 Tl=Events{Nc2};
 indexT1=find(Tf(1:indextime));
@@ -419,7 +478,7 @@ indexT2=find(Tl(1:indextime));
 
 vconduction1=zeros(length(indexT1)-1,1);
 
-distance=Nc2*dx-Nc1*dx;
+distance=Nb * 65 * 1e-4;
 
 Tf_pamax=t(indexT1).*1e-3;
 Tl_pamax=t(indexT2).*1e-3;
@@ -437,9 +496,9 @@ indexT1=find(Tf(indextime:end));
 indexT2=find(Tl(indextime:end));
 vconduction2=zeros(length(indexT1)-1,1);
 
-Tf_pamax=t(indexT1).*1e-3;
-Tl_pamax=t(indexT2).*1e-3;
-for i=1:length(Tf_pamax)
+Tf_pamax=t(indexT1+indextime).*1e-3;
+Tl_pamax=t(indexT2+indextime).*1e-3;
+for i=2:length(Tf_pamax)
 Tpaf=Tf_pamax(i);
 indexl=find(Tl_pamax>Tpaf,1,"first");
 Tpal=Tl_pamax(indexl);
@@ -454,14 +513,66 @@ figure(episode+Nbrecell*8)
 subplot(1,2,1)
 histogram(Pool_APD90off,30) 
 hold on
-histogram(Pool_APD90on,30) 
+histogram(Pool_APD90on,30)
+xlabel('APD90 (msec)')
+
 subplot(1,2,2)
 histogram(vconduction1,30) 
 hold on
 histogram(vconduction2,30) 
+xlabel('VC (cmsec)')
+
+files_save=['histogram_APD90left_VelocityCright_',title_text];
+
+saveas(gcf,[chemin,files_save],'jpeg')
+
+%**************************************************************************
+% conduction Velocity per max detected
+%*****************************************************************************
+%%
+
+
+
+Tf=Events{Nc1};
+Tl=Events{Nc2};
+
+indexT1=find(Tf);
+indexT2=find(Tl);
+
+
+vconduction=zeros(length(indexT1)-1,1);
+
+distance=Nb * 65 * 1e-4;
+
+Tf_pamax=t(indexT1).*1e-3;
+Tl_pamax=t(indexT2).*1e-3;
+figure('Name','Conduction Velocity per Max Upstroke')
+for i=1:length(Tf_pamax)
+Tpaf=Tf_pamax(i);
+indexl=find(Tl_pamax>Tpaf,1,"first");
+Tpal=Tl_pamax(indexl);
+duree=Tpal-Tpaf;
+vconduction(i)=distance/duree;
+hold on
+plot(Tf_pamax(i),vconduction(i),'or','MarkerSize',5)
+end
+hold off
+ylabel('Conduction Velocity (cm/sec)')
+xlabel('Time Beat (sec)')
+title(title_text)
+files_save=['VelocityConduction',title_text];
+saveas(gcf,[chemin,files_save],'jpeg')
+Result_VC = table(Tf_pamax,vconduction);
+Result_VC .Properties.VariableNames=["Beat Time", "VC"];
+
+writetable( Result_VC,[chemin,files_save,'.csv'],'Delimiter','tab')
+
+%%
 %*******************************************************************************************
 % sauver resultat analyse
 %******************************************************************************************
+%%
 save([chemin,'simul',num2str(Nbrecell),'cells_couple',num2str(G_gap),'_',...
     num2str(episode),'_',num2str(bpm_stim),'_couplemacro0_stim_',...
     num2str(flag_stim),'.mat'],'-mat');
+
