@@ -54,5 +54,11 @@ Example:
 
     ./mangoni.out Ncells 100 dcells_Macrophage 10 Ggap_scale 10 Ggapm_scale 10 Total_time 1000 Macrophage_coupling On Reference Test_10_10
 
-Source files are main_Mangoni1D.cpp,functions_Mangoni1D.cpp,Structs.h
-value of initials state in initial_conditions.csv 
+Source files are :
+
+main_Mangoni1D.cpp,
+functions_Mangoni1D.cpp,
+Structs.h
+
+value of initials state are in
+initial_conditions.csv 
