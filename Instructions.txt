@@ -1,0 +1,19 @@
+Compile:
+    g++ -g -O3 -std=c++11 main_Mangoni1D.cpp -o mangoni.o
+
+Optional arguments to control parameters:
+    initial_condition_default  ---- "On"/"Off"          ---- If initial condition are defaulted (On) or they need an input file (initial_conditions.csv)
+    BCL                        ---- double (ms)         ---- Basic Cycle Length
+    Ncells                     ---- int                 ---- Number of myocytes
+    Phi_type/Macrophage_type   ---- int (0, 1, 2, 12)   ---- Type of macrophage (different currents)
+    Macrophage_coupling        ---- "On"/"Off"          ---- Activate/deactivate coupling with macrophage
+    Total_time                 ---- double (ms)         ---- Total simulation time
+    Ncells_stim                ---- int                 ---- Number of stimulated myocytes (the Ncells_stim first)
+    dcells_Macrophage          ---- int                 ---- Macrophage coupling every dcells_Macrophage cells
+    Ggap_scale                 ---- float               ---- Scales the strength of adjacent myocytes coupling
+    Ggapm_scale                ---- float               ---- Scales the strength of coupling with macrophage
+    Reference                  ---- const char          ---- Folder to store output in
+    N_Phi			           ---- int 		        ---- Number of Macrophages coupled to myocyte
+
+Example:
+    ./mangoni.out Ncells 100 dcells_Macrophage 10 Ggap_scale 10 Ggapm_scale 10 Total_time 1000 Macrophage_coupling On Reference Test_10_10
