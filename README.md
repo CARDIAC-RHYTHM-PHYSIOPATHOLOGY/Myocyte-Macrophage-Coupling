@@ -1,17 +1,26 @@
 AVNMacromodel_new.m ODE code Atrio-Ventricular (AVN) mouse model with different macrophage type coupled.
+
 script_AVNMacro.m script to execute ODE code with specific simulations protocol.
 
 
-ScriptAnalyseParametrePAModelNAVMacro.m analysis code ,parameters extraction follows :APD90,Max AP,Threshold.
+ScriptAnalyseParametrePAModelNAVMacro.m analysis code ,parameters extraction follows :
+APD90,
+Max AP,
+Threshold.
+
 odewbar.m progression bar
+
 Recher_Start_Stop.m algorithm search for threshold AP.
 
 main_1D_Macromodel main script to launch the PDE AVN mouse model
+
 AVNmodel_Macromodel_1D.m PDE code Matlab Atrio-Ventricular mouse model chain of 24 cells
 
 A c++ code has been created by Mike Colman and David Conesa Ortega , University of Leeds, UK, based on the Matlab AVN 1D Macromodel in order to handle more than coupled 100 cells
 un Instruction.txt file contains the following , to compile
+
 Compile:
+
     g++ -g -O3 -std=c++11 main_Mangoni1D.cpp -o mangoni.o
 
 Optional arguments to control parameters:
